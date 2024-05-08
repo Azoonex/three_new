@@ -1,12 +1,18 @@
-import { Canvas, useFrame } from "@react-three/fiber"
-import { useRef } from "react"
+import { OrbitControls } from "@react-three/drei"
+import { Canvas, useFrame, } from "@react-three/fiber"
+import { useMotionValue, useSpring } from "framer-motion"
+import { useEffect, useRef } from "react"
+import { motion } from 'framer-motion-3d'
 
-function Index() {
+
+function Index({ sizeValue, zoomIn, mosueMove }) {
     return (
-        <div className="h-screen">
-            <Canvas>
+        <div className="h-[100vh] mt-16">
+            <Canvas className="bg-black">
+                <OrbitControls enableZoom={zoomIn} enablePan={false} />
                 <ambientLight intensity={2} />
-                <Cube />
+                <directionalLight position={[2, 1, 1]} />
+                <Cube sizeValue={sizeValue} mosueMove={mosueMove} />
             </Canvas>
         </div>
     )
@@ -15,21 +21,41 @@ function Index() {
 export default Index
 
 
+function Cube({ sizeValue, mosueMove }) {
+    const mesh = useRef(null);
+    const option = {
+        damping: 20
+    };
+    const mouse = {
+        x: useSpring(useMotionValue(0), option),
+        y: useSpring(useMotionValue(0), option)
+    };
 
+    const manageMoveFunction = (event) => {
+        const { innerWidth, innerHeight } = window;
+        const { clientX, clientY } = event;
+        const x = -0.5 + (clientX / innerWidth);
+        const y = -0.5 + (clientY / innerHeight);
+        mouse.x.set(x);
+        mouse.y.set(y);
+    };
 
-function Cube() {
+    useEffect(() => {
+        if (mosueMove) {
+            window.addEventListener("mousemove", manageMoveFunction);
+        } else {
+            window.removeEventListener("mousemove", manageMoveFunction);
+        }
 
-    const mesh = useRef(null)
-    useFrame((state,delta)=>{
-        mesh.current.rotation.x += delta * 0.25;
-        mesh.current.rotation.y += delta * 0.25;
-        mesh.current.rotation.z += delta * 0.25;
-    })
+        return () => {
+            window.removeEventListener("mousemove", manageMoveFunction);
+        };
+    }, [mosueMove]);
 
     return (
-        <mesh ref={mesh}>
-            <boxGeometry  args={[2.5,2.5,2.5]}/>
+        <motion.mesh ref={mesh} rotation-x={mouse.y} rotation-y={mouse.x}>
+            <boxGeometry args={[sizeValue, sizeValue, sizeValue]} />
             <meshStandardMaterial color={"orange"} />
-        </mesh>
-    )
-} 
+        </motion.mesh>
+    );
+}

@@ -2,4 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
 
+
+input{
+  @apply border-[1px] border-red-300 rounded-lg focus:border-[2px] focus:border-red-400 px-2 py-1 text-xl w-[100px] 
+}
+
+.ch_s{
+  @apply w-5 h-4 cursor-pointer mr-2
+  
+}
